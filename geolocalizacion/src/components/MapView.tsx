@@ -97,7 +97,7 @@ export default function MapView() {
     const center: [number, number] =
         polyline.length > 0
         ? polyline[Math.floor(polyline.length / 2)]
-        : userPos ?? [5.7925156193637815, -73.06376127888508];
+        : userPos ?? [5.794425, -73.062991];
         
 
     return (

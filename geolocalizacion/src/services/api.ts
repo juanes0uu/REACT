@@ -17,6 +17,9 @@ export const api = {
   getLugares: () => request("/lugares"),
   getRutas: () => request("/rutas"),
   getRutaById: (id: number) => request(`/rutas/${id}`),
-  getRutaDetalle: (idRuta: number) => request(`/ruta-detalle?r=${idRuta}`) // si usas query o ajusta path
-  // ajusta según endpoints reales
+  getRutaDetalle: (idRuta: number) => request(`/ruta-detalle/${idRuta}`),
+  postUbicacion: (data: unknown) => request("/ubicaciones", {
+    method: "POST",
+    body: JSON.stringify(data),
+  }),
 };
