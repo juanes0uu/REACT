@@ -24,7 +24,7 @@ const batmanIcon = L.icon({
 });
 
 // 👤 Simulación de usuario logueado
-const USUARIO_SIMULADO_ID = 2;
+const USUARIO_SIMULADO_ID = 1;
 
 export default function Mapa() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -34,6 +34,7 @@ export default function Mapa() {
   const marcadorUsuarioRef = useRef<L.Marker | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [rutaGuardadaId, setRutaGuardadaId] = useState<number | null>(null);
+  const [modoCarga, setModoCarga] = useState(false); // 🧠 Nuevo: modo carga
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -46,6 +47,7 @@ export default function Mapa() {
       attribution: "© OpenStreetMap",
     }).addTo(map);
 
+    // 📍 Captura clics para crear puntos de la ruta
     map.on("click", (e: any) => {
       if (rutaGuardadaId) return;
       const { lat, lng } = e.latlng;
@@ -64,10 +66,15 @@ export default function Mapa() {
     if (polylineRef.current) map.removeLayer(polylineRef.current);
     if (puntos.length > 0) {
       polylineRef.current = L.polyline(puntos as L.LatLngExpression[], { color: "blue" }).addTo(map);
-      if (puntos.length === 1) map.setView(puntos[0], 17);
-      else map.fitBounds(polylineRef.current.getBounds());
+
+      // 👇 Controla el zoom: solo ajusta cuando se carga una ruta
+      if (puntos.length === 1 && !modoCarga) {
+        map.setView(puntos[0], 17);
+      } else if (modoCarga) {
+        map.fitBounds(polylineRef.current.getBounds());
+      }
     }
-  }, [puntos]);
+  }, [puntos, modoCarga]);
 
   const guardarRuta = async () => {
     if (puntos.length === 0) return alert("Primero debes marcar una ruta.");
@@ -111,9 +118,13 @@ export default function Mapa() {
       if (!Array.isArray(detalle) || detalle.length === 0) return alert("Esta ruta no tiene puntos guardados.");
 
       const coords = detalle.map((p: any) => [parseFloat(p.Latitud), parseFloat(p.Longitud)]) as [number, number][];
+      setModoCarga(true); // 🔥 activar modo carga
       setPuntos(coords);
       setRutaGuardadaId(id);
       alert(`📍 Ruta ${id} cargada correctamente.`);
+
+      // volver al modo normal luego de ajustar vista
+      setTimeout(() => setModoCarga(false), 1000);
     } catch (err) {
       console.error("Error cargando ruta:", err);
       alert("Error al cargar la ruta: " + (err as any).message || err);
