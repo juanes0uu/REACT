@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { api } from "../services/api";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import batmanImg from "../assets/batman.png";
 
-// 🔧 Corrige los íconos por defecto de Leaflet (bug con Vite)
+// 🔧 Fix de íconos
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -13,110 +15,167 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
+// 🦇 Icono personalizado
+const batmanIcon = L.icon({
+  iconUrl: batmanImg,
+  iconSize: [48, 48],
+  iconAnchor: [24, 48],
+  popupAnchor: [0, -45],
+});
+
+// 👤 Simulación de usuario logueado
+const USUARIO_SIMULADO_ID = 2;
+
 export default function Mapa() {
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const [puntos, setPuntos] = useState<[number, number][]>([]);
   const polylineRef = useRef<L.Polyline | null>(null);
-  const marcadorSimuladoRef = useRef<L.Marker | null>(null);
   const marcadorUsuarioRef = useRef<L.Marker | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [rutaGuardadaId, setRutaGuardadaId] = useState<number | null>(null);
 
   useEffect(() => {
-    // Inicializa el mapa
-    const map = L.map("map").setView([5.79376, -73.06363], 17);
+    if (!mapContainerRef.current) return;
+
+    const map = L.map(mapContainerRef.current).setView([5.794425, -73.062991], 17);
     mapRef.current = map;
 
-    // Capa base
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: "© OpenStreetMap",
     }).addTo(map);
 
-    // Evento de clic para añadir puntos
     map.on("click", (e: any) => {
+      if (rutaGuardadaId) return;
       const { lat, lng } = e.latlng;
       setPuntos((prev) => [...prev, [lat, lng]]);
-      L.marker([lat, lng]).addTo(map).bindPopup(`Punto ${puntos.length + 1}`);
     });
 
-    return () => {
-      map.remove(); // Limpia el mapa al desmontar
-    };
-  }, []);
+    iniciarUbicacionUsuario();
 
-  // Dibuja la ruta cada vez que cambian los puntos
+    return () => map.remove();
+  }, [rutaGuardadaId]);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     if (polylineRef.current) map.removeLayer(polylineRef.current);
-    if (puntos.length > 1) {
-      polylineRef.current = L.polyline(puntos, { color: "blue" }).addTo(map);
+    if (puntos.length > 0) {
+      polylineRef.current = L.polyline(puntos as L.LatLngExpression[], { color: "blue" }).addTo(map);
+      if (puntos.length === 1) map.setView(puntos[0], 17);
+      else map.fitBounds(polylineRef.current.getBounds());
     }
   }, [puntos]);
 
-  // Funciones de botones
-  const guardarRuta = () => {
+  const guardarRuta = async () => {
     if (puntos.length === 0) return alert("Primero debes marcar una ruta.");
-    localStorage.setItem("rutaGuardada", JSON.stringify(puntos));
-    alert("✅ Ruta guardada correctamente.");
+    if (guardando) return;
+    if (rutaGuardadaId) return alert("La ruta ya fue guardada (ID: " + rutaGuardadaId + ").");
+
+    setGuardando(true);
+    try {
+      const nombre = `Ruta - ${new Date().toLocaleString()}`;
+      const resRuta = await api.postRuta({ IdUsuario: USUARIO_SIMULADO_ID, Nombre: nombre });
+
+      const idRuta = resRuta.IdRuta ?? (resRuta.ruta?.IdRuta ?? null);
+      if (!idRuta) throw new Error("No se pudo obtener el IdRuta desde la respuesta del servidor.");
+
+      const detalles = puntos.map((pt, idx) =>
+        api.postRutaDetalle({ IdRuta: idRuta, Latitud: pt[0], Longitud: pt[1], Orden: idx + 1 })
+      );
+      await Promise.all(detalles);
+
+      setRutaGuardadaId(idRuta);
+      alert(`✅ Ruta guardada correctamente. IdRuta = ${idRuta}`);
+    } catch (err) {
+      console.error("Error guardando ruta:", err);
+      alert("Error al guardar la ruta: " + (err as any).message || err);
+    } finally {
+      setGuardando(false);
+    }
   };
 
-  const cargarRuta = () => {
-    const data = localStorage.getItem("rutaGuardada");
-    if (!data) return alert("No hay ruta guardada.");
-    const ruta = JSON.parse(data);
-    setPuntos(ruta);
-    const map = mapRef.current;
-    if (map) {
-      if (polylineRef.current) map.removeLayer(polylineRef.current);
-      polylineRef.current = L.polyline(ruta, { color: "blue" }).addTo(map);
-      map.fitBounds(polylineRef.current.getBounds());
+  const cargarRuta = async () => {
+    try {
+      const rutas = await api.getRutas();
+      if (!Array.isArray(rutas) || rutas.length === 0) return alert("No hay rutas guardadas.");
+
+      const lista = rutas.map((r: any) => `${r.IdRuta}: ${r.Nombre}`).join("\n");
+      const input = prompt(`Selecciona el ID de la ruta:\n${lista}`);
+      const id = Number(input);
+      if (!id || isNaN(id)) return;
+
+      const detalle = await api.getRutaDetalle(id);
+      if (!Array.isArray(detalle) || detalle.length === 0) return alert("Esta ruta no tiene puntos guardados.");
+
+      const coords = detalle.map((p: any) => [parseFloat(p.Latitud), parseFloat(p.Longitud)]) as [number, number][];
+      setPuntos(coords);
+      setRutaGuardadaId(id);
+      alert(`📍 Ruta ${id} cargada correctamente.`);
+    } catch (err) {
+      console.error("Error cargando ruta:", err);
+      alert("Error al cargar la ruta: " + (err as any).message || err);
     }
   };
 
   const simular = () => {
     const map = mapRef.current;
     if (!map || puntos.length === 0) return alert("No hay ruta definida.");
-    if (marcadorSimuladoRef.current) map.removeLayer(marcadorSimuladoRef.current);
-
     let i = 0;
-    marcadorSimuladoRef.current = L.marker(puntos[0]).addTo(map);
+    const marcador = L.marker(puntos[0] as L.LatLngExpression).addTo(map);
     const intervalo = setInterval(() => {
       if (i >= puntos.length) {
         clearInterval(intervalo);
-        marcadorSimuladoRef.current?.bindPopup("🚩 Llegó al destino").openPopup();
+        marcador.bindPopup("🚩 Llegó al destino").openPopup();
         return;
       }
-      marcadorSimuladoRef.current?.setLatLng(puntos[i]);
+      marcador.setLatLng(puntos[i]);
       i++;
-    }, 1000);
+    }, 800);
   };
 
-  const miUbicacion = () => {
+  const iniciarUbicacionUsuario = () => {
     const map = mapRef.current;
-    if (!navigator.geolocation || !map) return alert("Tu navegador no soporta geolocalización.");
+    if (!navigator.geolocation || !map) return;
 
     navigator.geolocation.watchPosition(
-      (pos) => {
+      async (pos) => {
         const { latitude, longitude } = pos.coords;
         if (!marcadorUsuarioRef.current) {
-          marcadorUsuarioRef.current = L.marker([latitude, longitude])
+          marcadorUsuarioRef.current = L.marker([latitude, longitude], { icon: batmanIcon })
             .addTo(map)
-            .bindPopup("📍 Tú estás aquí")
+            .bindPopup("🦇 Tu ubicación")
             .openPopup();
-          map.setView([latitude, longitude], 15);
+          map.setView([latitude, longitude], 16);
         } else {
           marcadorUsuarioRef.current.setLatLng([latitude, longitude]);
         }
+        try {
+          await api.postUbicacion({ IdUsuario: USUARIO_SIMULADO_ID, Latitud: latitude, Longitud: longitude });
+        } catch (e) {
+          console.error("Error guardando ubicación:", e);
+        }
       },
-      (err) => alert("Error obteniendo ubicación: " + err.message),
+      (err) => console.warn("Geolocalización error:", err),
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
     );
   };
 
+  const limpiarRuta = () => {
+    if (rutaGuardadaId) return alert("La ruta ya fue guardada. Recarga para crear una nueva.");
+    setPuntos([]);
+    if (polylineRef.current) {
+      const map = mapRef.current;
+      if (map) map.removeLayer(polylineRef.current);
+      polylineRef.current = null;
+    }
+  };
+
   return (
-    <div style={{ position: "relative" }}>
-      <div id="map" style={{ height: "100vh", width: "100%" }}></div>
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      <div ref={mapContainerRef} id="map" style={{ width: "100%", height: "100%" }}></div>
 
       <div
         style={{
@@ -128,12 +187,20 @@ export default function Mapa() {
           borderRadius: "10px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
           zIndex: 1000,
+          display: "flex",
+          gap: 8,
         }}
       >
-        <button onClick={guardarRuta}>💾 Guardar ruta</button>
+        <button onClick={guardarRuta} disabled={guardando || !!rutaGuardadaId}>
+          {guardando ? "Guardando..." : rutaGuardadaId ? `Guardada (ID ${rutaGuardadaId})` : "💾 Guardar ruta"}
+        </button>
         <button onClick={cargarRuta}>📂 Cargar ruta</button>
-        <button onClick={simular}>▶️ Simular recorrido</button>
-        <button onClick={miUbicacion}>📍 Mi ubicación</button>
+        <button onClick={limpiarRuta} disabled={guardando || !!rutaGuardadaId}>
+          🧹 Limpiar
+        </button>
+        <button onClick={simular} disabled={puntos.length === 0}>
+          ▶️ Simular recorrido
+        </button>
       </div>
     </div>
   );
