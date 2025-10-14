@@ -15,8 +15,30 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 export const api = {
   getUsuarios: () => request("/usuarios"),
   getLugares: () => request("/lugares"),
-  getRutas: () => request("/rutas"),
-  getRutaById: (id: number) => request(`/rutas/${id}`),
-  getRutaDetalle: (idRuta: number) => request(`/ruta-detalle?r=${idRuta}`) // si usas query o ajusta path
-  // ajusta según endpoints reales
+
+  getRutas: async () => {
+    const res = await request<any>("/rutas");
+    return Array.isArray(res) ? res : res.data || [];
+  },
+
+  getRutaDetalle: async (idRuta: number) => {
+    const res = await request<any>(`/ruta-detalle/${idRuta}`);
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.detalle)) return res.detalle;
+    if (Array.isArray(res.rutaDetalle)) return res.rutaDetalle;
+    return [];
+  },
+
+  postUbicacion: (data: unknown) =>
+    request("/ubicaciones", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  postRuta: (data: { IdUsuario: number; Nombre?: string }) =>
+    request("/rutas", { method: "POST", body: JSON.stringify(data) }),
+
+  postRutaDetalle: (data: { IdRuta: number; Latitud: number; Longitud: number; Orden: number }) =>
+    request("/ruta-detalle", { method: "POST", body: JSON.stringify(data) }),
 };
