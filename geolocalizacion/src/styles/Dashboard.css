@@ -1,0 +1,134 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* ------------------------------
+   BARRA IZQUIERDA
+------------------------------ */
+.sidebar-left {
+  width: 22%;
+  background-color: #f4f6f5;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.sidebar-left h3 {
+  color: #007a3d;
+  margin-bottom: 15px;
+}
+
+.sidebar-left label {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.sidebar-left select,
+.sidebar-left button {
+  font-size: 15px;
+}
+
+.sidebar-left button {
+  background-color: #00994d;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.sidebar-left button:hover {
+  background-color: #007a3d;
+}
+
+/* ------------------------------
+   COLUMNA CENTRAL
+------------------------------ */
+.main-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-header {
+  padding: 12px;
+  background: #00994d;
+  color: #fff;
+  text-align: center;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ------------------------------
+   BARRA DERECHA
+------------------------------ */
+.sidebar-right {
+  width: 22%;
+  background-color: #f4f6f5;
+  border-left: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.sidebar-right h3 {
+  color: #007a3d;
+  margin-bottom: 15px;
+}
+
+.lugar-card {
+  background: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+}
+
+.lugar-card p {
+  font-size: 14px;
+  color: #555;
+}
+
+/* ------------------------------
+   SISTEMA NUMÉRICO
+------------------------------ */
+.sistema-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.sistema-grid div {
+  background-color: #00994d;
+  color: white;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+/* ------------------------------
+   RESPONSIVE
+------------------------------ */
+@media (max-width: 1000px) {
+  .sidebar-left,
+  .sidebar-right {
+    display: none;
+  }
+
+  .main-section {
+    width: 100%;
+  }
+}
