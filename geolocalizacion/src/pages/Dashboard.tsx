@@ -1,43 +1,32 @@
-    import React from "react";
+import React from "react";
+import "../styles/dashboard.css";
+import LeftSidebar from "../components/LeftSidebar";
+import RightPanel from "../components/RightPanel";
+import Mapa from "../components/Mapa2";
 
-    
-    import Mapa from "../components/Mapa"
+export default function Dashboard() {
+  return (
+    <div className="dashboard-container">
+      {/* Sidebar izquierda */}
+      <div className="sidebar-left">
+        <LeftSidebar />
+      </div>
 
-    export default function Dashboard() {
-        return (
-            <div
-            style={{
-                height: "100vh",
-                width: "100vw",
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-            }}
-            >
-            <header
-                style={{
-                padding: 12,
-                background: "#00994d",
-                color: "#fff",
-                textAlign: "center",
-                fontWeight: "bold",
-                flexShrink: 0,
-                }}
-            >
-                <h2>Recorrido Ciudadela</h2>
-            </header>
+      {/* Sección central con encabezado + mapa */}
+      <div className="main-section">
+        <header className="main-header">
+          <h2>Recorrido Ciudadela</h2>
+        </header>
 
-            {/* 👇 aquí el mapa ocupa TODO */}
-            <div
-                style={{
-                flex: 1,
-                position: "relative",
-                width: "100%",
-                height: "100%",
-                }}
-            >
-                <Mapa />
-            </div>
-            </div>
-        );
-    }
+        <div style={{ position: "relative", flex: 1 }}>
+          <Mapa />
+        </div>
+      </div>
+
+      {/* Sidebar derecha */}
+      <div className="sidebar-right">
+        <RightPanel />
+      </div>
+    </div>
+  );
+}
