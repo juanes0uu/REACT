@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 
 import "../styles/dashboard.css";
 import LeftSidebar from "../components/LeftSidebar";
-import Mapa from "../components/Mapa2";
+import Mapa from "../components/Mapa";
 
 export default function Dashboard() {
   const navigate = useNavigate();
