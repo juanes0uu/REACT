@@ -34,7 +34,8 @@ export default function Mapa() {
   const marcadorUsuarioRef = useRef<L.Marker | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [rutaGuardadaId, setRutaGuardadaId] = useState<number | null>(null);
-  const [modoCarga, setModoCarga] = useState(false); // 🧠 Nuevo: modo carga
+  const [modoCarga, setModoCarga] = useState(false);
+  const [modoCrearLugar, setModoCrearLugar] = useState(false);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -47,17 +48,49 @@ export default function Mapa() {
       attribution: "© OpenStreetMap",
     }).addTo(map);
 
-    // 📍 Captura clics para crear puntos de la ruta
-    map.on("click", (e: any) => {
-      if (rutaGuardadaId) return;
+    // 📍 Captura clics del mapa
+    map.on("click", async (e: any) => {
       const { lat, lng } = e.latlng;
-      setPuntos((prev) => [...prev, [lat, lng]]);
+
+      if (modoCrearLugar) {
+        const nombre = prompt("📝 Nombre del lugar:");
+        if (!nombre) return alert("Debes ingresar un nombre.");
+        const descripcion = prompt("📄 Descripción del lugar:") ?? "";
+
+        try {
+          const res = await api.postLugar({
+            IdUsuario: USUARIO_SIMULADO_ID,
+            Nombre: nombre,
+            Descripcion: descripcion,
+            Latitud: lat,
+            Longitud: lng,
+          });
+
+          L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup(`<b>${nombre}</b><br>${descripcion}`)
+            .openPopup();
+
+          alert("✅ Lugar creado correctamente.");
+        } catch (err) {
+          console.error("Error creando lugar:", err);
+          alert("❌ Error al crear el lugar: " + (err as any).message);
+        } finally {
+          setModoCrearLugar(false);
+        }
+        return;
+      }
+
+      // Si está en modo de crear ruta
+      if (!rutaGuardadaId) {
+        setPuntos((prev) => [...prev, [lat, lng]]);
+      }
     });
 
     iniciarUbicacionUsuario();
 
     return () => map.remove();
-  }, [rutaGuardadaId]);
+  }, [rutaGuardadaId, modoCrearLugar]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -67,7 +100,6 @@ export default function Mapa() {
     if (puntos.length > 0) {
       polylineRef.current = L.polyline(puntos as L.LatLngExpression[], { color: "blue" }).addTo(map);
 
-      // 👇 Controla el zoom: solo ajusta cuando se carga una ruta
       if (puntos.length === 1 && !modoCarga) {
         map.setView(puntos[0], 17);
       } else if (modoCarga) {
@@ -87,7 +119,7 @@ export default function Mapa() {
       const resRuta = await api.postRuta({ IdUsuario: USUARIO_SIMULADO_ID, Nombre: nombre });
 
       const idRuta = resRuta.IdRuta ?? (resRuta.ruta?.IdRuta ?? null);
-      if (!idRuta) throw new Error("No se pudo obtener el IdRuta desde la respuesta del servidor.");
+      if (!idRuta) throw new Error("No se pudo obtener el IdRuta.");
 
       const detalles = puntos.map((pt, idx) =>
         api.postRutaDetalle({ IdRuta: idRuta, Latitud: pt[0], Longitud: pt[1], Orden: idx + 1 })
@@ -98,7 +130,7 @@ export default function Mapa() {
       alert(`✅ Ruta guardada correctamente. IdRuta = ${idRuta}`);
     } catch (err) {
       console.error("Error guardando ruta:", err);
-      alert("Error al guardar la ruta: " + (err as any).message || err);
+      alert("Error al guardar la ruta: " + (err as any).message);
     } finally {
       setGuardando(false);
     }
@@ -115,19 +147,18 @@ export default function Mapa() {
       if (!id || isNaN(id)) return;
 
       const detalle = await api.getRutaDetalle(id);
-      if (!Array.isArray(detalle) || detalle.length === 0) return alert("Esta ruta no tiene puntos guardados.");
+      if (!Array.isArray(detalle) || detalle.length === 0) return alert("Esta ruta no tiene puntos.");
 
       const coords = detalle.map((p: any) => [parseFloat(p.Latitud), parseFloat(p.Longitud)]) as [number, number][];
-      setModoCarga(true); // 🔥 activar modo carga
+      setModoCarga(true);
       setPuntos(coords);
       setRutaGuardadaId(id);
       alert(`📍 Ruta ${id} cargada correctamente.`);
 
-      // volver al modo normal luego de ajustar vista
       setTimeout(() => setModoCarga(false), 1000);
     } catch (err) {
       console.error("Error cargando ruta:", err);
-      alert("Error al cargar la ruta: " + (err as any).message || err);
+      alert("Error al cargar la ruta: " + (err as any).message);
     }
   };
 
@@ -185,34 +216,155 @@ export default function Mapa() {
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      <div ref={mapContainerRef} id="map" style={{ width: "100%", height: "100%" }}></div>
+  <div style={{ position: "relative", width: "100%", height: "100%" }}>
+    <div ref={mapContainerRef} id="map" style={{ width: "100%", height: "100%" }}></div>
 
-      <div
+    {/* 📍 Botones estilizados y centrados abajo */}
+    <div
+      style={{
+        position: "absolute",
+        bottom: "20px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        display: "flex",
+        gap: "10px",
+        zIndex: 1000,
+        background: "rgba(255, 255, 255, 0.9)",
+        padding: "10px 15px",
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+        backdropFilter: "blur(6px)",
+      }}
+    >
+      <button
+        onClick={guardarRuta}
+        disabled={guardando || !!rutaGuardadaId}
         style={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          background: "white",
-          padding: "10px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          zIndex: 1000,
-          display: "flex",
-          gap: 8,
+          padding: "8px 14px",
+          borderRadius: "8px",
+          border: "none",
+          cursor: guardando ? "not-allowed" : "pointer",
+          backgroundColor: guardando
+            ? "#b0bec5"
+            : rutaGuardadaId
+            ? "#81c784"
+            : "#2196f3",
+          color: "white",
+          fontWeight: "bold",
+          transition: "0.2s",
         }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.backgroundColor = "#1976d2")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.backgroundColor = guardando
+            ? "#b0bec5"
+            : rutaGuardadaId
+            ? "#81c784"
+            : "#2196f3")
+        }
       >
-        <button onClick={guardarRuta} disabled={guardando || !!rutaGuardadaId}>
-          {guardando ? "Guardando..." : rutaGuardadaId ? `Guardada (ID ${rutaGuardadaId})` : "💾 Guardar ruta"}
-        </button>
-        <button onClick={cargarRuta}>📂 Cargar ruta</button>
-        <button onClick={limpiarRuta} disabled={guardando || !!rutaGuardadaId}>
-          🧹 Limpiar
-        </button>
-        <button onClick={simular} disabled={puntos.length === 0}>
-          ▶️ Simular recorrido
-        </button>
-      </div>
+        {guardando
+          ? "Guardando..."
+          : rutaGuardadaId
+          ? `✅ Guardada (${rutaGuardadaId})`
+          : "💾 Guardar"}
+      </button>
+
+      <button
+        onClick={cargarRuta}
+        style={{
+          padding: "8px 14px",
+          borderRadius: "8px",
+          border: "none",
+          cursor: "pointer",
+          backgroundColor: "#ffb300",
+          color: "white",
+          fontWeight: "bold",
+          transition: "0.2s",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.backgroundColor = "#ffa000")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.backgroundColor = "#ffb300")
+        }
+      >
+        📂 Cargar
+      </button>
+
+      <button
+        onClick={limpiarRuta}
+        disabled={guardando || !!rutaGuardadaId}
+        style={{
+          padding: "8px 14px",
+          borderRadius: "8px",
+          border: "none",
+          cursor: guardando ? "not-allowed" : "pointer",
+          backgroundColor: "#ef5350",
+          color: "white",
+          fontWeight: "bold",
+          transition: "0.2s",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.backgroundColor = "#e53935")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.backgroundColor = "#ef5350")
+        }
+      >
+        🧹 Limpiar
+      </button>
+
+      <button
+        onClick={simular}
+        disabled={puntos.length === 0}
+        style={{
+          padding: "8px 14px",
+          borderRadius: "8px",
+          border: "none",
+          cursor: puntos.length === 0 ? "not-allowed" : "pointer",
+          backgroundColor: "#8e24aa",
+          color: "white",
+          fontWeight: "bold",
+          transition: "0.2s",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.backgroundColor = "#6a1b9a")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.backgroundColor = "#8e24aa")
+        }
+      >
+        ▶️ Simular
+      </button>
+
+      <button
+        onClick={() => {
+          setModoCrearLugar(true);
+          alert("🟢 Haz clic en el mapa para crear un lugar.");
+        }}
+        style={{
+          padding: "8px 14px",
+          borderRadius: "8px",
+          border: "none",
+          cursor: "pointer",
+          backgroundColor: "#43a047",
+          color: "white",
+          fontWeight: "bold",
+          transition: "0.2s",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.backgroundColor = "#2e7d32")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.backgroundColor = "#43a047")
+        }
+      >
+        📍 Lugar
+      </button>
     </div>
-  );
+  </div>
+);
+
 }

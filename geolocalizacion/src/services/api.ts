@@ -41,4 +41,11 @@ export const api = {
 
   postRutaDetalle: (data: { IdRuta: number; Latitud: number; Longitud: number; Orden: number }) =>
     request("/ruta-detalle", { method: "POST", body: JSON.stringify(data) }),
+
+  postLugar: (data: { IdUsuario: number; Nombre: string; Descripcion?: string; Latitud: number; Longitud: number }) =>
+    request("/lugares", { method: "POST", body: JSON.stringify(data) }),
+
+
+  
+
 };
