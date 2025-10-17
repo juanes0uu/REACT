@@ -4,7 +4,7 @@ import React from "react";
 const LeftSidebar: React.FC = () => {
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold mb-4">Instrucciones</h2>
+      <h2 className="text-lg font-semibold mb-4">Informacion</h2>
 
       <div className="space-y-3">
         <select className="w-full p-2 rounded text-black">

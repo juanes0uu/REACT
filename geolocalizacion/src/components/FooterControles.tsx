@@ -6,6 +6,7 @@ interface Props {
   onCargar: () => void;
   onLimpiar: () => void;
   onSimular: () => void;
+  onCrearLugar: () => void;
   guardando: boolean;
   rutaGuardadaId: number | null;
   puntos: [number, number][];
@@ -16,6 +17,7 @@ const FooterControles: React.FC<Props> = ({
   onCargar,
   onLimpiar,
   onSimular,
+  onCrearLugar,
   guardando,
   rutaGuardadaId,
   puntos,
@@ -70,7 +72,11 @@ const FooterControles: React.FC<Props> = ({
         onClick={onSimular}
         disabled={puntos.length === 0}
       >
-        ▶️ Simular recorrido
+        ▶️ Simular
+      </Button>
+
+      <Button variant="contained" color="success" onClick={onCrearLugar}>
+        📍 Crear Lugar
       </Button>
     </Box>
   );

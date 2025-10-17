@@ -8,7 +8,7 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import batmanImg from "../assets/batman.png";
 import FooterControles from "./FooterControles";
 
-// 🔧 Fix de íconos de Leaflet
+// 🔧 Fix de íconos por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -16,12 +16,20 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// 🦇 Icono personalizado
+// 🦇 Icono personalizado del usuario
 const batmanIcon = L.icon({
   iconUrl: batmanImg,
   iconSize: [48, 48],
   iconAnchor: [24, 48],
   popupAnchor: [0, -45],
+});
+
+// 📍 Ícono tipo pin para los lugares
+const lugarIcon = L.divIcon({
+  className: "custom-lugar-icon",
+  html: `<div style="font-size: 28px; transform: translate(-50%, -100%);">📍</div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 28],
 });
 
 // 👤 Usuario simulado (temporal)
@@ -31,13 +39,52 @@ export default function Mapa2() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const [puntos, setPuntos] = useState<[number, number][]>([]);
+  const [lugares, setLugares] = useState<any[]>([]);
   const polylineRef = useRef<L.Polyline | null>(null);
   const marcadorUsuarioRef = useRef<L.Marker | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [rutaGuardadaId, setRutaGuardadaId] = useState<number | null>(null);
-  const [modoCarga, setModoCarga] = useState(false); // 🧠 modo carga
+  const [modoCarga, setModoCarga] = useState(false);
+  const [modoCrearLugar, setModoCrearLugar] = useState(false);
+  const lugaresLayerRef = useRef<L.LayerGroup | null>(null);
 
-  // Inicialización del mapa
+  // ⚙️ Cargar todos los lugares guardados
+  const cargarLugares = async () => {
+    try {
+      const data = await api.getLugares();
+      if (!Array.isArray(data)) return;
+
+      setLugares(data);
+
+      const map = mapRef.current;
+      if (!map) return;
+
+      // 🧹 Limpiar marcadores anteriores
+      if (lugaresLayerRef.current) {
+        lugaresLayerRef.current.clearLayers();
+      } else {
+        lugaresLayerRef.current = L.layerGroup().addTo(map);
+      }
+
+      // 📍 Agregar marcadores de lugares
+      data.forEach((lugar: any) => {
+        const marker = L.marker(
+          [parseFloat(lugar.Latitud), parseFloat(lugar.Longitud)],
+          { icon: lugarIcon }
+        ).bindPopup(
+          `<b>${lugar.Nombre}</b><br>${lugar.Descripcion || "Sin descripción"}`,
+          { closeOnClick: false, autoClose: false } // 👈 popup fijo
+        );
+
+        marker.addTo(lugaresLayerRef.current!);
+        marker.openPopup(); // 👈 abre el popup de inmediato
+      });
+    } catch (err) {
+      console.error("Error cargando lugares:", err);
+    }
+  };
+
+  // 🗺️ Inicialización del mapa
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -49,18 +96,58 @@ export default function Mapa2() {
       attribution: "© OpenStreetMap",
     }).addTo(map);
 
-    // 📍 Clics para crear puntos de ruta
-    map.on("click", (e: any) => {
-      if (rutaGuardadaId) return;
+    cargarLugares();
+    iniciarUbicacionUsuario();
+
+    // 🎯 Clicks del mapa
+    map.on("click", async (e: any) => {
       const { lat, lng } = e.latlng;
-      setPuntos((prev) => [...prev, [lat, lng]]);
+
+      // 🟢 Si está en modo "crear lugar"
+      if (modoCrearLugar) {
+        const nombre = prompt("📝 Nombre del lugar:");
+        if (!nombre) return alert("Debes ingresar un nombre.");
+        const descripcion = prompt("📄 Descripción del lugar:") ?? "";
+
+        try {
+          await api.postLugar({
+            IdUsuario: USUARIO_SIMULADO_ID,
+            Nombre: nombre,
+            Descripcion: descripcion,
+            Latitud: lat,
+            Longitud: lng,
+          });
+
+          // 📍 Agregar nuevo marcador al instante con popup fijo
+          const nuevo = L.marker([lat, lng], { icon: lugarIcon })
+            .addTo(map)
+            .bindPopup(`<b>${nombre}</b><br>${descripcion}`, {
+              closeOnClick: false,
+              autoClose: false,
+            })
+            .openPopup(); // 👈 se queda abierto
+
+          alert("✅ Lugar creado correctamente.");
+          cargarLugares();
+        } catch (err) {
+          console.error("Error creando lugar:", err);
+          alert("❌ Error al crear el lugar: " + (err as any).message);
+        } finally {
+          setModoCrearLugar(false);
+        }
+        return;
+      }
+
+      // 🟦 Si no está en modo crear → agregar punto a la ruta
+      if (!rutaGuardadaId) {
+        setPuntos((prev) => [...prev, [lat, lng]]);
+      }
     });
 
-    iniciarUbicacionUsuario();
     return () => map.remove();
-  }, [rutaGuardadaId]);
+  }, [modoCrearLugar]);
 
-  // Dibujar polilínea cuando cambian los puntos
+  // ✏️ Dibujar polilínea
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -78,85 +165,7 @@ export default function Mapa2() {
     }
   }, [puntos, modoCarga]);
 
-  // Guardar ruta
-  const guardarRuta = async () => {
-    if (puntos.length === 0) return alert("Primero debes marcar una ruta.");
-    if (guardando) return;
-    if (rutaGuardadaId) return alert(`La ruta ya fue guardada (ID: ${rutaGuardadaId}).`);
-
-    setGuardando(true);
-    try {
-      const nombre = `Ruta - ${new Date().toLocaleString()}`;
-      const resRuta = await api.postRuta({ IdUsuario: USUARIO_SIMULADO_ID, Nombre: nombre });
-
-      const idRuta = resRuta.IdRuta ?? (resRuta.ruta?.IdRuta ?? null);
-      if (!idRuta) throw new Error("No se pudo obtener el IdRuta desde el servidor.");
-
-      const detalles = puntos.map((pt, idx) =>
-        api.postRutaDetalle({ IdRuta: idRuta, Latitud: pt[0], Longitud: pt[1], Orden: idx + 1 })
-      );
-      await Promise.all(detalles);
-
-      setRutaGuardadaId(idRuta);
-      alert(`✅ Ruta guardada correctamente. IdRuta = ${idRuta}`);
-    } catch (err) {
-      console.error("Error guardando ruta:", err);
-      alert("Error al guardar la ruta: " + (err as any).message || err);
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // Cargar ruta
-  const cargarRuta = async () => {
-    try {
-      const rutas = await api.getRutas();
-      if (!Array.isArray(rutas) || rutas.length === 0) return alert("No hay rutas guardadas.");
-
-      const lista = rutas.map((r: any) => `${r.IdRuta}: ${r.Nombre}`).join("\n");
-      const input = prompt(`Selecciona el ID de la ruta:\n${lista}`);
-      const id = Number(input);
-      if (!id || isNaN(id)) return;
-
-      const detalle = await api.getRutaDetalle(id);
-      if (!Array.isArray(detalle) || detalle.length === 0)
-        return alert("Esta ruta no tiene puntos guardados.");
-
-      const coords = detalle.map((p: any) => [parseFloat(p.Latitud), parseFloat(p.Longitud)]) as [
-        number,
-        number
-      ][];
-      setModoCarga(true);
-      setPuntos(coords);
-      setRutaGuardadaId(id);
-      alert(`📍 Ruta ${id} cargada correctamente.`);
-
-      setTimeout(() => setModoCarga(false), 1000);
-    } catch (err) {
-      console.error("Error cargando ruta:", err);
-      alert("Error al cargar la ruta: " + (err as any).message || err);
-    }
-  };
-
-  // Simular recorrido
-  const simular = () => {
-    const map = mapRef.current;
-    if (!map || puntos.length === 0) return alert("No hay ruta definida.");
-
-    let i = 0;
-    const marcador = L.marker(puntos[0] as L.LatLngExpression).addTo(map);
-    const intervalo = setInterval(() => {
-      if (i >= puntos.length) {
-        clearInterval(intervalo);
-        marcador.bindPopup("🚩 Llegó al destino").openPopup();
-        return;
-      }
-      marcador.setLatLng(puntos[i]);
-      i++;
-    }, 800);
-  };
-
-  // Ubicación del usuario
+  // 📡 Ubicación del usuario (con popup fijo)
   const iniciarUbicacionUsuario = () => {
     const map = mapRef.current;
     if (!navigator.geolocation || !map) return;
@@ -167,11 +176,12 @@ export default function Mapa2() {
         if (!marcadorUsuarioRef.current) {
           marcadorUsuarioRef.current = L.marker([latitude, longitude], { icon: batmanIcon })
             .addTo(map)
-            .bindPopup("🦇 Tu ubicación")
+            .bindPopup("🦇 Tu ubicación", { closeOnClick: false, autoClose: false }) // 👈 popup fijo
             .openPopup();
           map.setView([latitude, longitude], 16);
         } else {
           marcadorUsuarioRef.current.setLatLng([latitude, longitude]);
+          marcadorUsuarioRef.current.openPopup();
         }
 
         try {
@@ -189,17 +199,6 @@ export default function Mapa2() {
     );
   };
 
-  // Limpiar ruta
-  const limpiarRuta = () => {
-    if (rutaGuardadaId) return alert("La ruta ya fue guardada. Recarga para crear una nueva.");
-    setPuntos([]);
-    if (polylineRef.current) {
-      const map = mapRef.current;
-      if (map) map.removeLayer(polylineRef.current);
-      polylineRef.current = null;
-    }
-  };
-
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>
       {/* 🗺️ Contenedor del mapa */}
@@ -213,12 +212,16 @@ export default function Mapa2() {
         }}
       ></div>
 
-      {/* ⚙️ Footer flotante con los botones */}
+      {/* ⚙️ Footer con controles */}
       <FooterControles
-        onGuardar={guardarRuta}
-        onCargar={cargarRuta}
-        onLimpiar={limpiarRuta}
-        onSimular={simular}
+        onGuardar={() => {}}
+        onCargar={() => {}}
+        onLimpiar={() => {}}
+        onSimular={() => {}}
+        onCrearLugar={() => {
+          setModoCrearLugar(true);
+          alert("🟢 Haz clic en el mapa para crear un lugar.");
+        }}
         guardando={guardando}
         rutaGuardadaId={rutaGuardadaId}
         puntos={puntos}

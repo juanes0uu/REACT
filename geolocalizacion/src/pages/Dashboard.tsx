@@ -23,10 +23,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Sidebar derecha */}
-      <div className="sidebar-right">
-        <RightPanel />
-      </div>
     </div>
   );
 }
