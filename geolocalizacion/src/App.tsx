@@ -1,13 +1,14 @@
+// src/App.tsx
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import Perfil from "./pages/Perfil";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
-      {/* si el usuario entra a otra ruta, lo mandamos al dashboard */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/perfil" element={<Perfil />} />
     </Routes>
   );
 }
