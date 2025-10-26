@@ -16,22 +16,18 @@ import { useNavigate } from "react-router-dom";
 
 import "../styles/dashboard.css";
 import LeftSidebar from "../components/LeftSidebar";
-import Mapa from "../components/Mapa";
+import Mapa from "../components/Mapa2";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-
-  // Estado para el menú del perfil
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const navigate = useNavigate();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  const handleMenuClose = () => setAnchorEl(null);
 
   return (
     <div className="dashboard-container">
@@ -42,7 +38,7 @@ export default function Dashboard() {
 
       {/* Sección central */}
       <div className="main-section">
-        {/* 🌿 NAVBAR SUPERIOR con MUI */}
+        {/* 🌿 NAVBAR SUPERIOR */}
         <AppBar position="static" sx={{ backgroundColor: "#2e7d32" }}>
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
             {/* Lado izquierdo: logo y nombre */}
@@ -55,13 +51,25 @@ export default function Dashboard() {
 
             {/* Lado derecho: botones y perfil */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-              <Typography variant="body1" sx={{ cursor: "pointer" }}>
+              <Typography
+                variant="body1"
+                sx={{ cursor: "pointer" }}
+                onClick={() => navigate("/")}
+              >
                 Explorar
               </Typography>
-              <Typography variant="body1" sx={{ cursor: "pointer" }}>
-                Empresas
+              <Typography
+                variant="body1"
+                sx={{ cursor: "pointer" }}
+                onClick={() => navigate("/info")}
+              >
+                Info
               </Typography>
-              <Typography variant="body1" sx={{ cursor: "pointer" }}>
+              <Typography
+                variant="body1"
+                sx={{ cursor: "pointer" }}
+                onClick={() => navigate("/contacto")}
+              >
                 Contacto
               </Typography>
 
@@ -85,28 +93,11 @@ export default function Dashboard() {
                   horizontal: "right",
                 }}
               >
-                <MenuItem
-                  onClick={() => {
-                    handleMenuClose();
-                    navigate("/perfil");
-                  }}
-                >
-                  Perfil
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleMenuClose();
-                    alert("Configuración próximamente");
-                  }}
-                >
+                <MenuItem onClick={() => navigate("/perfil")}>Perfil</MenuItem>
+                <MenuItem onClick={() => alert("Configuración")}>
                   Configuración
                 </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleMenuClose();
-                    alert("Cerrar sesión");
-                  }}
-                >
+                <MenuItem onClick={() => alert("Cerrar sesión")}>
                   Cerrar sesión
                 </MenuItem>
               </Menu>
@@ -114,7 +105,7 @@ export default function Dashboard() {
           </Toolbar>
         </AppBar>
 
-        {/* 🗺️ Contenedor del mapa (mantiene los botones flotantes dentro de Mapa2) */}
+        {/* 🗺️ Contenedor del mapa */}
         <div style={{ position: "relative", flex: 1 }}>
           <Mapa />
         </div>
