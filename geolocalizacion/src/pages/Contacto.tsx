@@ -57,7 +57,7 @@ export default function Contacto() {
                   Información de contacto
                 </Typography>
                 <Typography variant="body1">📍 Duitama, Boyacá, Colombia</Typography>
-                <Typography variant="body1">📧 idealsevents@gmail.com</Typography>
+                <Typography variant="body1">📧 GeoTech@gmail.com</Typography>
                 <Typography variant="body1">📞 +57 312 345 6789</Typography>
                 <Typography variant="body1" sx={{ mt: 2 }}>
                   También puedes seguirnos en nuestras redes sociales para más información y actualizaciones.
