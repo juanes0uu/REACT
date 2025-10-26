@@ -24,7 +24,7 @@ const batmanIcon = L.icon({
 });
 
 // 👤 Simulación de usuario logueado
-const USUARIO_SIMULADO_ID = 1;
+const USUARIO_SIMULADO_ID = 2;
 
 export default function Mapa() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
