@@ -5,6 +5,7 @@ interface Props {
   onGuardar: () => void;
   onCargar: () => void;
   onLimpiar: () => void;
+  onCargarLugares: () => void; // 👈 nuevo
   onSimular: () => void;
   onCrearLugar: () => void;
   guardando: boolean;
@@ -16,6 +17,7 @@ const FooterControles: React.FC<Props> = ({
   onGuardar,
   onCargar,
   onLimpiar,
+  onCargarLugares,
   onSimular,
   onCrearLugar,
   guardando,
@@ -78,6 +80,11 @@ const FooterControles: React.FC<Props> = ({
       <Button variant="contained" color="success" onClick={onCrearLugar}>
         📍 Crear Lugar
       </Button>
+
+      <Button variant="contained" color="info" onClick={onCargarLugares}>
+        📦 Cargar lugares
+      </Button>
+
     </Box>
   );
 };
