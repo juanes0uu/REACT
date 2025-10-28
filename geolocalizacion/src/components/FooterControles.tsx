@@ -5,8 +5,9 @@ interface Props {
   onGuardar: () => void;
   onCargar: () => void;
   onLimpiar: () => void;
-  onCargarLugares: () => void; // 👈 nuevo
+  onCargarLugares: () => void;
   onSimular: () => void;
+  onSimularMovimiento: () => void;
   onCrearLugar: () => void;
   guardando: boolean;
   rutaGuardadaId: number | null;
@@ -19,6 +20,7 @@ const FooterControles: React.FC<Props> = ({
   onLimpiar,
   onCargarLugares,
   onSimular,
+  onSimularMovimiento,
   onCrearLugar,
   guardando,
   rutaGuardadaId,
@@ -28,18 +30,22 @@ const FooterControles: React.FC<Props> = ({
     <Box
       sx={{
         position: "absolute",
-        bottom: 20,
+        bottom: 16,
         left: "50%",
         transform: "translateX(-50%)",
         backgroundColor: "rgba(255, 255, 255, 0.95)",
         borderRadius: 3,
         boxShadow: "0px 4px 20px rgba(0,0,0,0.25)",
         display: "flex",
-        gap: 2,
-        px: 3,
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: 1,
+        px: 2,
         py: 1.5,
         zIndex: 1000,
         backdropFilter: "blur(6px)",
+        width: "95%",
+        maxWidth: 600,
       }}
     >
       <Button
@@ -47,16 +53,24 @@ const FooterControles: React.FC<Props> = ({
         color="primary"
         disabled={guardando || !!rutaGuardadaId}
         onClick={onGuardar}
+        size="small"
+        sx={{ flex: "1 1 140px", fontSize: "0.8rem" }}
       >
         {guardando
           ? "Guardando..."
           : rutaGuardadaId
           ? `Guardada (ID ${rutaGuardadaId})`
-          : "💾 Guardar ruta"}
+          : "💾 Guardar"}
       </Button>
 
-      <Button variant="contained" color="secondary" onClick={onCargar}>
-        📂 Cargar ruta
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={onCargar}
+        size="small"
+        sx={{ flex: "1 1 140px", fontSize: "0.8rem" }}
+      >
+        📂 Cargar
       </Button>
 
       <Button
@@ -64,6 +78,8 @@ const FooterControles: React.FC<Props> = ({
         color="error"
         onClick={onLimpiar}
         disabled={guardando || !!rutaGuardadaId}
+        size="small"
+        sx={{ flex: "1 1 140px", fontSize: "0.8rem" }}
       >
         🧹 Limpiar
       </Button>
@@ -73,18 +89,41 @@ const FooterControles: React.FC<Props> = ({
         color="success"
         onClick={onSimular}
         disabled={puntos.length === 0}
+        size="small"
+        sx={{ flex: "1 1 140px", fontSize: "0.8rem" }}
       >
         ▶️ Simular
       </Button>
 
-      <Button variant="contained" color="success" onClick={onCrearLugar}>
-        📍 Crear Lugar
+      <Button
+        variant="contained"
+        color="warning"
+        onClick={onSimularMovimiento}
+        size="small"
+        sx={{ flex: "1 1 140px", fontSize: "0.8rem" }}
+      >
+        🚶 Simular movimiento
       </Button>
 
-      <Button variant="contained" color="info" onClick={onCargarLugares}>
-        📦 Cargar lugares
+      <Button
+        variant="contained"
+        color="success"
+        onClick={onCrearLugar}
+        size="small"
+        sx={{ flex: "1 1 140px", fontSize: "0.8rem" }}
+      >
+        ➕ Lugar
       </Button>
 
+      <Button
+        variant="contained"
+        color="info"
+        onClick={onCargarLugares}
+        size="small"
+        sx={{ flex: "1 1 140px", fontSize: "0.8rem" }}
+      >
+        📍 Lugares
+      </Button>
     </Box>
   );
 };
