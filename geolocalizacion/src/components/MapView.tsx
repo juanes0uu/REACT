@@ -173,7 +173,7 @@ export default function MapView() {
             ((e.target as HTMLButtonElement).style.transform =
             "translateX(-50%) scale(1)")
         }
-        >
+        >    
         {started ? "■ Detener recorrido" : "▶ Iniciar recorrido"}
         </button>
 

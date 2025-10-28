@@ -2,9 +2,12 @@
 import React from "react";
 import { Box, Typography, TextField, Button, Grid, Card, CardContent } from "@mui/material";
 import { motion } from "framer-motion";
+import Navbar from "../components/Navbar";
 
 export default function Contacto() {
   return (
+    <>
+    <Navbar/>
     <Box
       sx={{
         minHeight: "100vh",
@@ -17,7 +20,7 @@ export default function Contacto() {
         variant="h3"
         align="center"
         fontWeight="bold"
-        sx={{ mb: 4, color: "#1a237e" }}
+        sx={{ mb: 4, color: "#2e7d32" }}
       >
         Contáctanos
       </Typography>
@@ -40,9 +43,20 @@ export default function Contacto() {
                   multiline
                   rows={4}
                 />
-                <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
-                  Enviar
-                </Button>
+               <Button
+                variant="contained" fullWidth 
+                  sx={{
+                  mt: 2,
+                  py: 1.2,
+                  borderRadius: 2,
+                  backgroundColor: "#2e7d32", 
+                  "&:hover": {
+                    backgroundColor: "#256628", // tono más oscuro al pasar el mouse
+                  },
+                }}
+              >
+                Enviar
+              </Button>
               </CardContent>
             </Card>
           </motion.div>
@@ -51,7 +65,7 @@ export default function Contacto() {
         {/* Información */}
         <Grid item xs={12} md={5}>
           <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }}>
-            <Card sx={{ borderRadius: 3, boxShadow: 6, backgroundColor: "#1a237e", color: "white" }}>
+            <Card sx={{ borderRadius: 3, boxShadow: 6, backgroundColor: "#2e7d32", color: "white" }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Información de contacto
@@ -68,6 +82,7 @@ export default function Contacto() {
         </Grid>
       </Grid>
     </Box>
+    </>
   );
 }
 

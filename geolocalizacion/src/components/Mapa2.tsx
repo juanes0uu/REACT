@@ -33,7 +33,7 @@ const lugarIcon = L.divIcon({
 });
 
 // 👤 Usuario simulado
-const USUARIO_SIMULADO_ID = 2;
+const USUARIO_SIMULADO_ID = 1;
 
 export default function Mapa2() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -111,9 +111,6 @@ export default function Mapa2() {
     }).addTo(map);
 
     iniciarUbicacionUsuario();
-
-    // ❌ Eliminamos el cargado automático de lugares
-    // setTimeout(() => { cargarLugares(); }, 1000);
 
     map.on("click", async (e: any) => {
       const { lat, lng } = e.latlng;
@@ -317,6 +314,50 @@ export default function Mapa2() {
     }, 800);
   };
 
+  // 🚶 Simular movimiento del usuario
+  const simularMovimientoUsuario = () => {
+    const map = mapRef.current;
+    if (!map) return alert("El mapa no está listo aún.");
+
+    if (!marcadorUsuarioRef.current) {
+      alert("No hay marcador de usuario aún. Activa la ubicación o espera un momento.");
+      return;
+    }
+
+    const recorrido = [
+      { lat: 5.756, lon: -72.909 },
+      { lat: 5.7565, lon: -72.9087 },
+      { lat: 5.757, lon: -72.908 },
+      { lat: 5.7573, lon: -72.9074 },
+      { lat: 5.7577, lon: -72.907 },
+      { lat: 5.758, lon: -72.9067 },
+    ];
+
+    let i = 0;
+    const intervalo = setInterval(async () => {
+      if (i >= recorrido.length) {
+        clearInterval(intervalo);
+        alert("🦇 Simulación de movimiento completada.");
+        return;
+      }
+
+      const { lat, lon } = recorrido[i];
+      marcadorUsuarioRef.current!.setLatLng([lat, lon]);
+      map.panTo([lat, lon]);
+      i++;
+
+      try {
+        await api.postUbicacion({
+          IdUsuario: USUARIO_SIMULADO_ID,
+          Latitud: lat,
+          Longitud: lon,
+        });
+      } catch (e) {
+        console.warn("Error simulando ubicación:", e);
+      }
+    }, 1500);
+  };
+
   // 🧹 Limpiar ruta
   const limpiarRuta = () => {
     setPuntos([]);
@@ -344,6 +385,7 @@ export default function Mapa2() {
         onLimpiar={limpiarRuta}
         onCargarLugares={cargarLugares}
         onSimular={simular}
+        onSimularMovimiento={simularMovimientoUsuario}
         onCrearLugar={() => {
           setModoCrearLugar(true);
           alert("🟢 Haz clic en el mapa para crear un lugar.");
