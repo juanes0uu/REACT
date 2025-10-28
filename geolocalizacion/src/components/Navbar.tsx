@@ -75,9 +75,7 @@ export default function Navbar() {
             transformOrigin={{ vertical: "top", horizontal: "right" }}
           >
             <MenuItem onClick={() => navigate("/perfil")}>Perfil</MenuItem>
-            <MenuItem onClick={() => alert("Configuración")}>
-              Configuración
-            </MenuItem>
+            <MenuItem onClick={() => navigate("Configuracion")}>Configuración</MenuItem>
             <MenuItem onClick={() => alert("Cerrar sesión")}>
               Cerrar sesión
             </MenuItem>

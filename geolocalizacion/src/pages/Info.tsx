@@ -22,7 +22,7 @@ export default function Info() {
         align="center"
         fontWeight="bold"
         gutterBottom
-        sx={{ color: "#1a237e", mb: 4 }}
+        sx={{ color: "#2e7d32", mb: 4 }}
       >
         Sobre Nuestro Proyecto
       </Typography>
@@ -62,7 +62,7 @@ export default function Info() {
                 }}
               >
                 <CardContent>
-                  <Typography variant="h5" fontWeight="bold" sx={{ color: "#3949ab" }}>
+                  <Typography variant="h5" fontWeight="bold" sx={{ color: "#2e7d32" }}>
                     {item.title}
                   </Typography>
                   <Divider sx={{ my: 2 }} />
@@ -82,7 +82,7 @@ export default function Info() {
           variant="h4"
           align="center"
           fontWeight="bold"
-          sx={{ color: "#1a237e", mb: 3 }}
+          sx={{ color: "#2e7d32", mb: 3 }}
         >
           Creadores del Proyecto
         </Typography>
