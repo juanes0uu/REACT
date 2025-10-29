@@ -73,7 +73,7 @@ export default function Perfil() {
             }}
           />
           <Typography variant="h6" fontWeight="bold">
-            Juan Esteban Castañeda Ordo
+            Juan Esteban Castañeda Ortiz
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             @juanesteban
