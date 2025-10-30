@@ -33,17 +33,18 @@ export default function Info() {
           {
             title: "Misión",
             text:
-              "Desarrollar una plataforma interactiva que fomente la conexión entre estudiantes, empresas e instituciones educativas, potenciando el aprendizaje práctico y la innovación tecnológica.",
+              "Desarrollar una plataforma de geolocalización que facilite la visualización, exploración y conexión entre visitantes y empresas de la Ciudadela Industrial de Duitama, promoviendo el acceso a la información y la innovación local.",
           },
           {
             title: "Visión",
             text:
-              "Convertirnos en una herramienta de referencia para la educación aplicada y la vinculación con el entorno industrial, impulsando el talento local hacia el futuro digital.",
+              "Consolidar a GeoTech como una herramienta tecnológica de referencia para la gestión y promoción de zonas industriales, impulsando la transformación digital y la visibilidad empresarial en la región .",
           },
           {
             title: "Futuro",
             text:
-              "A futuro buscamos integrar tecnologías de geolocalización, IA y realidad aumentada para crear experiencias más inmersivas e interactivas.",
+              "En próximas etapas planeamos incorporar funciones como seguimiento en tiempo real, notificaciones inteligentes y visualización mejorada de rutas dentro de la Ciudadela Industrial.. A futuro buscamos integrar un sistema de autenticación de usuarios, un panel personalizado para visitantes y funciones avanzadas de rutas interactivas en tiempo real." , 
+            
           },
         ].map((item, index) => (
           <Grid item xs={12} md={4} key={index}>
@@ -88,10 +89,10 @@ export default function Info() {
         </Typography>
         <Grid container spacing={4} justifyContent="center">
           {[
-            { name: "Compañero 1", role: "Frontend & UI Designer" },
-            { name: "Compañero 2", role: "Backend & Servidor Deno" },
-            { name: "Compañero 3", role: "Base de Datos" },
-            { name: "Compañero 4", role: "Integración y Documentación" },
+            { name: "Nicol Alarcón", role: "Frontend" },
+            { name: "Juan Castañeda", role: "Backend " },
+            { name: "Alejandra Duran", role: "Base de Datos" },
+            { name: "Eduard Fonseca", role: "Servidor Deno " },
           ].map((person, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
               <motion.div
