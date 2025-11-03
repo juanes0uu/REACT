@@ -1,7 +1,6 @@
+// src/pages/Perfil.tsx
 import React from "react";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Box,
   Avatar,
@@ -9,13 +8,9 @@ import {
   Paper,
   Divider,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
-import { useNavigate } from "react-router-dom";
 
 export default function Perfil() {
-  const navigate = useNavigate();
-
   return (
     <Box
       sx={{
@@ -23,24 +18,9 @@ export default function Perfil() {
         backgroundColor: "#f5f5f5",
         display: "flex",
         flexDirection: "column",
+        pt: 10, // deja espacio debajo del navbar global
       }}
     >
-      {/* 🌿 Navbar superior */}
-      <AppBar position="static" sx={{ backgroundColor: "#2e7d32" }}>
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <ArrowBackIcon
-              sx={{ cursor: "pointer" }}
-              onClick={() => navigate("/")}
-            />
-            <Typography variant="h6">Perfil de Usuario</Typography>
-          </Box>
-          <Typography variant="body1" sx={{ opacity: 0.8 }}>
-            GeoTech
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
       {/* 🧑 Contenido principal */}
       <Box
         sx={{
@@ -96,7 +76,10 @@ export default function Perfil() {
           <Button
             variant="contained"
             startIcon={<EditIcon />}
-            sx={{ backgroundColor: "#2e7d32", "&:hover": { backgroundColor: "#256428" } }}
+            sx={{
+              backgroundColor: "#2e7d32",
+              "&:hover": { backgroundColor: "#256428" },
+            }}
           >
             Editar perfil
           </Button>

@@ -2,12 +2,11 @@
 import React from "react";
 import { Box, Typography, Card, CardContent, Grid, Avatar, Divider } from "@mui/material";
 import { motion } from "framer-motion";
-import Navbar from "../components/Navbar";
+
 
 export default function Info() {
   return (
-    <>
-    <Navbar/>
+    
     <Box
       sx={{
         minHeight: "100vh",
@@ -126,7 +125,7 @@ export default function Info() {
         </Grid>
       </Box>
     </Box>
-    </>
+    
   );
 }
 

@@ -11,7 +11,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar"; 
+
 
 export default function Configuracion() {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export default function Configuracion() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5" }}>
-      <Navbar />
+     
 
       <Box sx={{ maxWidth: 900, mx: "auto", mt: 5, p: 3 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom color="#2e7d32">

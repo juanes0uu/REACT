@@ -1,11 +1,11 @@
 // src/components/Navbar.tsx
-import React, { useState } from "react";
+import React from "react";
 import {
   AppBar,
   Toolbar,
+  IconButton,
   Typography,
   Box,
-  IconButton,
   Avatar,
   Menu,
   MenuItem,
@@ -14,10 +14,14 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useNavigate } from "react-router-dom";
 
-export default function Navbar() {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+interface NavbarProps {
+  onMenuClick: () => void;
+}
+
+export default function Navbar({ onMenuClick }: NavbarProps) {
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) =>
     setAnchorEl(event.currentTarget);
@@ -27,37 +31,20 @@ export default function Navbar() {
     <AppBar position="static" sx={{ backgroundColor: "#2e7d32" }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <MenuIcon />
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ cursor: "pointer" }}
-            onClick={() => navigate("/")}
-          >
-            GeoTech
-          </Typography>
+          <IconButton color="inherit" onClick={onMenuClick}>
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6">GeoTech</Typography>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-          <Typography
-            variant="body1"
-            sx={{ cursor: "pointer" }}
-            onClick={() => navigate("/")}
-          >
+          <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/")}>
             Explorar
           </Typography>
-          <Typography
-            variant="body1"
-            sx={{ cursor: "pointer" }}
-            onClick={() => navigate("/info")}
-          >
+          <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/info")}>
             Info
           </Typography>
-          <Typography
-            variant="body1"
-            sx={{ cursor: "pointer" }}
-            onClick={() => navigate("/contacto")}
-          >
+          <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/contacto")}>
             Contacto
           </Typography>
 
@@ -75,10 +62,15 @@ export default function Navbar() {
             transformOrigin={{ vertical: "top", horizontal: "right" }}
           >
             <MenuItem onClick={() => navigate("/perfil")}>Perfil</MenuItem>
-            <MenuItem onClick={() => navigate("Configuracion")}>Configuración</MenuItem>
-            <MenuItem onClick={() => alert("Cerrar sesión")}>
-              Cerrar sesión
+            <MenuItem
+              onClick={() => {
+                handleMenuClose();
+                navigate("/configuracion");
+              }}
+            >
+              Configuración
             </MenuItem>
+            <MenuItem onClick={() => alert("Cerrar sesión")}>Cerrar sesión</MenuItem>
           </Menu>
         </Box>
       </Toolbar>

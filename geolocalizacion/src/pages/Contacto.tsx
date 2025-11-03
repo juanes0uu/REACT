@@ -2,12 +2,12 @@
 import React from "react";
 import { Box, Typography, TextField, Button, Grid, Card, CardContent } from "@mui/material";
 import { motion } from "framer-motion";
-import Navbar from "../components/Navbar";
+
 
 export default function Contacto() {
   return (
-    <>
-    <Navbar/>
+    
+   
     <Box
       sx={{
         minHeight: "100vh",
@@ -82,7 +82,7 @@ export default function Contacto() {
         </Grid>
       </Grid>
     </Box>
-    </>
+    
   );
 }
 
