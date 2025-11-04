@@ -1,5 +1,4 @@
-// src/pages/Perfil.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Box,
@@ -7,10 +6,117 @@ import {
   Button,
   Paper,
   Divider,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 
+interface Usuario {
+  IdUsuario: number;
+  Nombre: string;
+  Email: string;
+  Documento: string;
+}
+
 export default function Perfil() {
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [cargando, setCargando] = useState(true);
+
+  // Estados para el modal de edición
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editData, setEditData] = useState({ Nombre: "", Email: "", Documento: "" });
+
+  // Snackbar
+  const [mensaje, setMensaje] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [tipoSnackbar, setTipoSnackbar] = useState<"success" | "error">("success");
+
+  useEffect(() => {
+    // Por ahora usamos el usuario con ID 1
+    fetch("http://localhost:8080/usuarios/1")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setUsuario(data.data);
+        }
+      })
+      .catch((err) => console.error("Error al cargar usuario:", err))
+      .finally(() => setCargando(false));
+  }, []);
+
+  // Cargar datos al abrir el modal
+  const handleOpenEdit = () => {
+    if (usuario) {
+      setEditData({
+        Nombre: usuario.Nombre,
+        Email: usuario.Email,
+        Documento: usuario.Documento,
+      });
+      setOpenEdit(true);
+    }
+  };
+
+  const handleCloseEdit = () => setOpenEdit(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditData({ ...editData, [e.target.name]: e.target.value });
+  };
+
+  // Enviar cambios al backend
+  const handleGuardarCambios = async () => {
+    if (!usuario) return;
+
+    try {
+      const res = await fetch(`http://localhost:8080/usuarios/${usuario.IdUsuario}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editData),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setUsuario({ ...usuario, ...editData });
+        setMensaje("Perfil actualizado correctamente");
+        setTipoSnackbar("success");
+      } else {
+        setMensaje("Error al actualizar el perfil");
+        setTipoSnackbar("error");
+      }
+    } catch (error) {
+      console.error("Error al guardar cambios:", error);
+      setMensaje("Error en la conexión con el servidor");
+      setTipoSnackbar("error");
+    } finally {
+      setOpenSnackbar(true);
+      setOpenEdit(false);
+    }
+  };
+
+  if (cargando) {
+    return (
+      <Box sx={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!usuario) {
+    return (
+      <Box sx={{ textAlign: "center", mt: 10 }}>
+        <Typography variant="h6" color="error">
+          No se encontró el usuario.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -18,10 +124,9 @@ export default function Perfil() {
         backgroundColor: "#f5f5f5",
         display: "flex",
         flexDirection: "column",
-        pt: 10, // deja espacio debajo del navbar global
+       
       }}
     >
-      {/* 🧑 Contenido principal */}
       <Box
         sx={{
           flex: 1,
@@ -43,7 +148,7 @@ export default function Perfil() {
           }}
         >
           <Avatar
-            alt="Usuario"
+            alt={usuario.Nombre}
             src="/assets/user.png"
             sx={{
               width: 120,
@@ -53,22 +158,19 @@ export default function Perfil() {
             }}
           />
           <Typography variant="h6" fontWeight="bold">
-            Juan Esteban Castañeda Ortiz
+            {usuario.Nombre}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            @juanesteban
+            {usuario.Email}
           </Typography>
 
           <Divider sx={{ my: 2 }} />
 
           <Typography variant="body1" sx={{ mb: 1 }}>
-            <strong>Email:</strong> juanesteban@ejemplo.com
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 1 }}>
-            <strong>Ciudad:</strong> Duitama, Boyacá
+            <strong>Documento:</strong> {usuario.Documento}
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
-            <strong>Miembro desde:</strong> Enero 2024
+            <strong>ID Usuario:</strong> {usuario.IdUsuario}
           </Typography>
 
           <Divider sx={{ my: 2 }} />
@@ -80,11 +182,67 @@ export default function Perfil() {
               backgroundColor: "#2e7d32",
               "&:hover": { backgroundColor: "#256428" },
             }}
+            onClick={handleOpenEdit}
           >
             Editar perfil
           </Button>
         </Paper>
       </Box>
+
+      {/* MODAL PARA EDITAR PERFIL */}
+      <Dialog open={openEdit} onClose={handleCloseEdit}>
+        <DialogTitle>Editar Perfil</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            name="Nombre"
+            label="Nombre"
+            fullWidth
+            value={editData.Nombre}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="Email"
+            label="Correo electrónico"
+            fullWidth
+            value={editData.Email}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="Documento"
+            label="Documento"
+            fullWidth
+            value={editData.Documento}
+            onChange={handleChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEdit} color="error">
+            Cancelar
+          </Button>
+          <Button onClick={handleGuardarCambios} variant="contained" color="success">
+            Guardar cambios
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* SNACKBAR */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={tipoSnackbar}
+          sx={{ width: "100%" }}
+        >
+          {mensaje}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

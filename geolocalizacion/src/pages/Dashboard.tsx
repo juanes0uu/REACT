@@ -11,15 +11,24 @@ interface DashboardProps {
 export default function Dashboard({ sidebarOpen, onSidebarClose }: DashboardProps) {
   return (
     <div
-      className="dashboard-container"
-      style={{ height: "100vh", display: "flex", flexDirection: "column" }}
+      style={{
+        height: "calc(100vh - 64px)", // 🔹 Resta la altura del Navbar global (64px aprox)
+        overflow: "hidden", // 🔹 Evita scroll innecesario
+        position: "relative",
+      }}
     >
-      {/*  Contenido principal */}
-      <div style={{ flex: 1, position: "relative" }}>
+      {/* 🗺️ Mapa ocupa todo el espacio disponible */}
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "relative",
+        }}
+      >
         <Mapa />
       </div>
 
-      {/*  Sidebar (Drawer) */}
+      {/* 📋 Drawer lateral */}
       <Drawer
         anchor="left"
         open={sidebarOpen}
