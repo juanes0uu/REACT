@@ -1,13 +1,40 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+// src/App.tsx
+import React, { useState } from "react";
+import { Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import Perfil from "./pages/Perfil";
+import Info from "./pages/Info";
+import Contacto from "./pages/Contacto";
+import Configuracion from "./pages/Configuracion";
+import VisitanteDashboard from "./pages/VisitanteDashboard";
+import Navbar from "./components/Navbar"; // tu navbar global
 
 export default function App() {
+  // 👇 Estado global del Drawer
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <Routes>
-      <Route path="/" element={<Dashboard />} />
-      {/* si el usuario entra a otra ruta, lo mandamos al dashboard */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      {/* 🔝 Navbar visible en todas las páginas */}
+      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+
+      {/* Rutas */}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Dashboard
+              sidebarOpen={sidebarOpen}
+              onSidebarClose={() => setSidebarOpen(false)}
+            />
+          }
+        />
+        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/info" element={<Info />} />
+        <Route path="/contacto" element={<Contacto />} />
+        <Route path="/configuracion" element={<Configuracion />} />
+        <Route path="/visitante" element={<VisitanteDashboard />} />
+      </Routes>
+    </>
   );
 }

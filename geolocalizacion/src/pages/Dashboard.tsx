@@ -1,43 +1,49 @@
-    import React from "react";
+import React from "react";
+import { Drawer } from "@mui/material";
+import Mapa from "../components/Mapa2";
+import LeftSidebar from "../components/LeftSidebar";
 
-    
-    import Mapa from "../components/Mapa"
+interface DashboardProps {
+  sidebarOpen: boolean;
+  onSidebarClose: () => void;
+}
 
-    export default function Dashboard() {
-        return (
-            <div
-            style={{
-                height: "100vh",
-                width: "100vw",
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-            }}
-            >
-            <header
-                style={{
-                padding: 12,
-                background: "#00994d",
-                color: "#fff",
-                textAlign: "center",
-                fontWeight: "bold",
-                flexShrink: 0,
-                }}
-            >
-                <h2>Recorrido Ciudadela</h2>
-            </header>
+export default function Dashboard({ sidebarOpen, onSidebarClose }: DashboardProps) {
+  return (
+    <div
+      style={{
+        height: "calc(100vh - 64px)", // 🔹 Resta la altura del Navbar global (64px aprox)
+        overflow: "hidden", // 🔹 Evita scroll innecesario
+        position: "relative",
+      }}
+    >
+      {/* 🗺️ Mapa ocupa todo el espacio disponible */}
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "relative",
+        }}
+      >
+        <Mapa />
+      </div>
 
-            {/* 👇 aquí el mapa ocupa TODO */}
-            <div
-                style={{
-                flex: 1,
-                position: "relative",
-                width: "100%",
-                height: "100%",
-                }}
-            >
-                <Mapa />
-            </div>
-            </div>
-        );
-    }
+      {/* 📋 Drawer lateral */}
+      <Drawer
+        anchor="left"
+        open={sidebarOpen}
+        onClose={onSidebarClose}
+        PaperProps={{
+          sx: {
+            width: 300,
+            backgroundColor: "#f9fafb",
+            color: "#111827",
+            padding: 3,
+          },
+        }}
+      >
+        <LeftSidebar onClose={onSidebarClose} />
+      </Drawer>
+    </div>
+  );
+}

@@ -8,3 +8,8 @@ html, body, #root {
 * {
     box-sizing: border-box;
 }
+
+
+.custom-lugar-icon {
+  transform: translate(-50%, -100%);
+}
