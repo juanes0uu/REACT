@@ -379,7 +379,7 @@ export default function Mapa2() {
         }}
       ></div>
 
-      <FooterControles
+      <FooterControles 
         onGuardar={guardarRuta}
         onCargar={cargarRuta}
         onLimpiar={limpiarRuta}
