@@ -8,6 +8,8 @@ import Contacto from "./pages/Contacto";
 import Configuracion from "./pages/Configuracion";
 import VisitanteDashboard from "./pages/VisitanteDashboard";
 import Navbar from "./components/Navbar"; // tu navbar global
+import TestMapWS from "./components/TestMapWS";
+
 
 export default function App() {
   // 👇 Estado global del Drawer
@@ -34,6 +36,8 @@ export default function App() {
         <Route path="/contacto" element={<Contacto />} />
         <Route path="/configuracion" element={<Configuracion />} />
         <Route path="/visitante" element={<VisitanteDashboard />} />
+        <Route path="/test-ws" element={<TestMapWS />} />
+
       </Routes>
     </>
   );

@@ -1,6 +1,7 @@
 import React from "react";
 import { Drawer } from "@mui/material";
-import Mapa from "../components/Mapa2";
+// import Mapa from "../components/Mapa2";
+import TestMapWS from "../components/TestMapWS";
 import LeftSidebar from "../components/LeftSidebar";
 
 interface DashboardProps {
@@ -25,7 +26,7 @@ export default function Dashboard({ sidebarOpen, onSidebarClose }: DashboardProp
           position: "relative",
         }}
       >
-        <Mapa />
+        <TestMapWS />
       </div>
 
       {/* 📋 Drawer lateral */}

@@ -45,7 +45,4 @@ export const api = {
   postLugar: (data: { IdUsuario: number; Nombre: string; Descripcion?: string; Latitud: number; Longitud: number }) =>
     request("/lugares", { method: "POST", body: JSON.stringify(data) }),
 
-
-  
-
 };
